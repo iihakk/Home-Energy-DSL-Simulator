@@ -1,0 +1,86 @@
+grammar org.homeenergy.HemDsl with org.eclipse.xtext.common.Terminals
+
+generate hemDsl "http://www.homeenergy.org/HEMDSL"
+
+Model:
+  elements+=Element*
+;
+
+Element:
+    Declaration
+  | Rule
+;
+
+Declaration:
+  'appliance' name=ID ':' type=ApplianceType ';'
+;
+
+enum ApplianceType:
+    HVAC='HVAC'
+  | WaterHeater='WaterHeater'
+  | Washer='Washer'
+  | Dryer='Dryer'
+  | Light='Light'
+;
+
+Rule:
+  'rule' name=ID
+  'when' condition=Expr
+  'then' thenAction=Action
+  ('else' elseAction=Action)?
+  ';'
+;
+
+Action:
+    TurnAction
+  | SetAction
+;
+
+TurnAction:
+  'turn' appliance=[Declaration] action=('on'|'off')
+;
+
+SetAction:
+  'set' appliance=[Declaration] 'to' value=NUMBER
+;
+
+Expr:
+  orExpr=OrExpr
+;
+
+OrExpr:
+  left=AndExpr ( 'or' right+=AndExpr )*
+;
+
+AndExpr:
+  left=Prim ( 'and' right+=Prim )*
+;
+
+Prim:
+    timeCond=TimeCond
+  | priceCond=PriceCond
+  | occCond=OccCond
+  | '(' subExpr=Expr ')'
+;
+
+TimeCond:
+  'time' ( '=' time=TIME_LIT | 'between' start=TIME_LIT 'to' end=TIME_LIT )
+;
+
+PriceCond:
+  'price' op=RelOp value=NUMBER
+;
+
+OccCond:
+  'occupancy' op=RelOp value=INT
+;
+
+RelOp:
+  '>' | '<' | '>=' | '<=' | '==' | '!='
+;
+
+//―――――――――――――――――――――――――――
+// Terminals
+//―――――――――――――――――――――――――――
+terminal TIME_LIT: INT ':' INT;
+terminal NUMBER  : INT ('.' INT)?;

@@ -1,0 +1,11 @@
+appliance heater : WaterHeater;
+appliance hvac   : HVAC;
+
+rule nightly_off
+  when time = 22:00
+  then turn heater off;
+
+rule pricey_pause
+  when price > 0.25
+  then turn hvac off
+  else turn hvac on;
